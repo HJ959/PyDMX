@@ -98,10 +98,17 @@ class DMXLightUking(DMXLight3Slot):
     def __init__(self, address: int = 1):
         '''Initialise the light.'''
         super().__init__(address=address)
-        self._brightness = 255
+        self._brightness = 0
         self._strobe = 0
         self._preset_one = 0
-        self._preset_two = 0
+        self._preset_speed = 0
+
+    def reset(self):
+        self._brightness = 0
+        self._strobe = 0
+        self._preset_one = 0
+        self._preset_speed = 0
+        self._colour = BLACK
 
     def set_brightness(self, value: int):
         '''Set the brightness of the light between 0 and 255'''
@@ -115,9 +122,9 @@ class DMXLightUking(DMXLight3Slot):
         '''Set the first preset slot'''
         self._preset_one = int(max(0, min(value, 255)))
 
-    def set_preset_two(self, value: int):
+    def set_preset_speed(self, value: int):
         '''Set the second preset slot'''
-        self._preset_two = int(max(0, min(value, 255)))
+        self._preset_speed = int(max(0, min(value, 255)))
 
     @property
     def slot_count(self) -> int:
@@ -126,7 +133,7 @@ class DMXLightUking(DMXLight3Slot):
 
     def serialise(self) -> List[int]:
         '''Serialise the DMX light to a sequence of bytes'''
-        return [self._brightness] + super().serialise() + [self._strobe] + [self._preset_one] + [self._preset_two]
+        return [self._brightness] + super().serialise() + [self._strobe] + [self._preset_one] + [self._preset_speed]
 
 
 
