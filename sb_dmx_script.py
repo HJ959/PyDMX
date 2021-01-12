@@ -2,6 +2,8 @@ from dmx import Colour, DMXInterface, DMXLight3Slot, DMXLightUking, DMXUniverse
 from time import sleep
 from sys import exit as sys_exit
 import random
+import socket
+import re
 
 # blue colour scheme 
 CYAN = Colour(0,255,208)
@@ -14,6 +16,10 @@ RED = Colour(255,0,47)
 ORANGE = Colour(255,81,0)
 PINK = Colour(255,0,175)
 red_scheme = [RED, ORANGE, PINK]
+
+# filter out the commands from the udp packets
+re_udp_audiofile = re.compile(r"b'<(.+?)>")
+re_udp_clockin = re.compile(r"b'{(.+?)}")
 
 ##############################################################################
 def set_and_update(universe, interface):
@@ -29,8 +35,14 @@ def blackout(lights):
     
 ##############################################################################
 
-def main():
-    
+def main():    
+    UDP_IP = ""
+    UDP_PORT = 5005
+
+    sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+
+    sock.bind((UDP_IP, UDP_PORT))
+
     # Open an interface
     with DMXInterface("FT232R") as interface:
         # create a universe
@@ -47,6 +59,18 @@ def main():
         blackout(lights)
         set_and_update(universe, interface)
 
+        while True:
+            data, addr = sock.recvfrom(1024)
+            data = str(data)
+            
+            # a str wrapped in {z1=100{ will contain zone instructions
+            if '{' in data:
+                data = data.split('{')[1]
+                messages = data.split(',')
+            
+            # for every message in the data
+            if 'CLOCK' in data:
+                pass
         # To Do
         # infinite loop that checks for updates from max
         # if update
